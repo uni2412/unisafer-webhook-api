@@ -83,8 +83,12 @@ export default async function handler(
           to: lead.email,
           subject: campaign.subject,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
               ${emailBody.replace(/\n/g, '<br>')}
+              <hr style="margin-top: 40px; border: none; border-top: 1px solid #eee;">
+              <p style="color: #666; font-size: 12px; text-align: center;">
+                Você recebeu este email porque está cadastrado em nossa base de leads.
+              </p>
             </div>
           `,
         });
@@ -93,10 +97,10 @@ export default async function handler(
           throw emailError;
         }
 
-        console.log(`✅ Email enviado para ${lead.email}`, emailData);
+        console.log(`✅ Email enviado para ${lead.email}`);
 
         // Registrar envio
-        await supabase.from('campaign_sends').insert({
+        await supabase.from('campaign_sends').upsert({
           campaign_id: campaignId,
           lead_id: lead.id,
           email: lead.email,
@@ -113,7 +117,7 @@ export default async function handler(
         });
 
         // Registrar falha
-        await supabase.from('campaign_sends').insert({
+        await supabase.from('campaign_sends').upsert({
           campaign_id: campaignId,
           lead_id: lead.id,
           email: lead.email,
@@ -122,8 +126,8 @@ export default async function handler(
         });
       }
 
-      // Delay de 100ms entre emails para evitar rate limit
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Delay de 200ms entre emails para evitar rate limit
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
 
     // 4. Atualizar campanha
